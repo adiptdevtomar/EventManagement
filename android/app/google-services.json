@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "251158517544",
+    "firebase_url": "https://gametask-c952f.firebaseio.com",
+    "project_id": "gametask-c952f",
+    "storage_bucket": "gametask-c952f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251158517544:android:47b8f18aef7421dd27221d",
+        "android_client_info": {
+          "package_name": "com.example.game_task"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "251158517544-a3rnlr0eepasra8ub294cedrj9g389oa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9TYUIb_pF5Kt1xVkK1uvwJ-XnKjt_zuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "251158517544-a3rnlr0eepasra8ub294cedrj9g389oa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
