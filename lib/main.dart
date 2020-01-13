@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:game_task/GSignIn.dart';
+import 'package:game_task/Test.dart';
 import 'CodeScreen.dart';
 
 void main() {
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
       title: 'Event',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primaryColor: Colors.indigo),
-      home: CodePage(),
+      home: GSignIn(),
       );
   }
 }

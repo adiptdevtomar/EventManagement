@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
         title: Text(title),
       ),
       body: Center(
-        child: Text("Home Page"),
+        child: Text(title),
       ),
     );
   }
