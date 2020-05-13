@@ -1,8 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:game_task/CodeScreen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:page_transition/page_transition.dart';
+import 'globals.dart' as globals;
 
 class GSignIn extends StatefulWidget {
   @override
@@ -30,20 +35,14 @@ class _GoogleSignInState extends State<GSignIn> {
     List<ProviderDetails> providerData = new List<ProviderDetails>();
     providerData.add(providerInfo);
 
-    UserDetails details = new UserDetails(
-      userDetails.providerId,
-      userDetails.displayName,
-      userDetails.photoUrl,
-      userDetails.email,
-      providerData,
-    );
+    globals.userName = userDetails.displayName;
+    globals.emailID = userDetails.email;
     Navigator.push(
-
-      context,
-      new MaterialPageRoute(
-        builder: (context) => new CodePage(name: userDetails.displayName),
-      ),
-    );
+        context,
+        PageTransition(
+            type: PageTransitionType.upToDown,
+            duration: Duration(seconds: 1, milliseconds: 500),
+            child: CodePage()));
     return userDetails;
   }
 
@@ -53,43 +52,30 @@ class _GoogleSignInState extends State<GSignIn> {
       child: Scaffold(
         body: Center(
           child: Container(
-            child: SizedBox(
-              width: 150.0,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.black,width: 2.0),
-                    borderRadius: BorderRadius.circular(30.0)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Icon(FontAwesomeIcons.google,color: Colors.black),
-                    SizedBox(width: 10.0,),
-                    Text("Sign IN",style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold))
-                    /*Text.rich(
-                      TextSpan(
-                        children: <TextSpan>[
-                          TextSpan(text: "Sign in With ",style: TextStyle(fontSize: 25.0)),
-                          *//*TextSpan(text: "Sign",style: TextStyle(fontSize: 25.0,color: Colors.blue)),
-                          TextSpan(text: " in ",style: TextStyle(fontSize: 25.0,color: Colors.yellow)),
-                          TextSpan(text: "With ",style: TextStyle(fontSize: 25.0,color: Colors.red)),*//*
-                          TextSpan(text: "G",style: TextStyle(fontSize: 25.0,color: Colors.blue)),
-                          TextSpan(text: "o",style: TextStyle(fontSize: 25.0,color: Colors.red)),
-                          TextSpan(text: "o",style: TextStyle(fontSize: 25.0,color: Colors.yellow)),
-                          TextSpan(text: "g",style: TextStyle(fontSize: 25.0,color: Colors.blue)),
-                          TextSpan(text: "l",style: TextStyle(fontSize: 25.0,color: Colors.green)),
-                          TextSpan(text: "e",style: TextStyle(fontSize: 25.0,color: Colors.red)),
-                        ]
-                      )
-                    ),*/
-                  ],
+            height: 300.0,
+            width: 290.0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Hero(
+                  tag: "dash",
+                  child: Icon(
+                    FontAwesomeIcons.googleWallet,
+                    size: 200.0,
+                  ),
                 ),
-                color: Colors.white,
-                onPressed: () {
+                SignInButton(Buttons.Google,
+                    padding: EdgeInsets.all(2.0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                        side: BorderSide(color: Colors.black, width: 1.0)),
+                    onPressed: () {
                   _signIn(context)
                       .then((FirebaseUser user) => print(user))
                       .catchError((e) => print(e));
-                },
-              ),
+                })
+              ],
             ),
           ),
         ),

@@ -1,25 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'globals.dart' as globals;
 
 class GameScreen extends StatefulWidget {
-
-  final String title;
-  final String name;
-  final String nickName;
-
-  GameScreen({Key key, @required this.title, @required this.name, @required this.nickName})
-      : super(key: key);
-
   @override
   _GameScreenState createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
-
   void _delete() async {
-    await Firestore.instance.collection("CurrentUsers").where("NickName",isEqualTo: widget.nickName).getDocuments().then((QuerySnapshot snap){
-      snap.documents.forEach((DocumentSnapshot sna){
+    await Firestore.instance
+        .collection("CurrentUsers")
+        .where("EmailID", isEqualTo: globals.emailID)
+        .getDocuments()
+        .then((QuerySnapshot snap) {
+      snap.documents.forEach((DocumentSnapshot sna) {
         sna.reference.delete();
       });
     });
@@ -49,10 +45,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               )
             ],
           );
-        }
-    );
+        });
   }
-
 
   @override
   void initState() {
@@ -88,36 +82,35 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             title: Text("All Data"),
           ),
           body: Container(
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width,
+              width: MediaQuery.of(context).size.width,
               child: StreamBuilder(
-                stream: Firestore.instance.collection('CurrentUsers')
+                stream: Firestore.instance
+                    .collection('CurrentUsers')
+                    .where("EventName", isEqualTo: globals.eventName)
+                    .where("Ready", isEqualTo: 1)
+                    .limit(1)
                     .snapshots(),
                 builder: (context, snapshots) {
                   if (!snapshots.hasData) {
                     return Text('Loading');
-                  }
-                  else {
+                  } else {
                     return ListView.builder(
                       itemCount: snapshots.data.documents.length,
                       itemBuilder: (context, index) {
-                        DocumentSnapshot myUsers = snapshots.data
-                            .documents[index];
-                        return (widget.title == myUsers['EventName'])
+                        DocumentSnapshot myUsers =
+                            snapshots.data.documents[index];
+                        return (globals.eventName == myUsers['EventName'])
                             ? ListTile(
-                            title: Text('${myUsers['NickName']}'),
-                            subtitle: Text('${myUsers['UserName']}')
-                        ):SizedBox(
-                          height: 1.0,
-                        );
+                                title: Text('${globals.userName}'),
+                                subtitle: Text('${myUsers['EventName']}'))
+                            : SizedBox(
+                                height: 1.0,
+                              );
                       },
                     );
                   }
                 },
-              )
-          ),
+              )),
         ),
       ),
     );

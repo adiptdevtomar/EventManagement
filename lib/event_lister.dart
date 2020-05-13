@@ -1,27 +1,19 @@
 import 'dart:ui';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:game_task/GSignIn.dart';
-import 'package:game_task/game_area.dart';
-import 'package:game_task/new_player_details.dart';
+import 'package:game_task/select_game.dart';
 
-import 'game_page.dart';
 import 'home_page.dart';
+import 'globals.dart' as globals;
 
 class drawerapp extends StatefulWidget {
-
-  final String Title;
-  final String name;
-
-  drawerapp({Key key, @required this.Title ,@required this.name}) : super(key : key);
-
   @override
   _drawerappState createState() => _drawerappState();
 }
 
 class _drawerappState extends State<drawerapp> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void _logoutDialog() {
     showDialog(
@@ -29,6 +21,8 @@ class _drawerappState extends State<drawerapp> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
             title: Text("Are you sure you want to Logout?"),
             actions: <Widget>[
               FlatButton(
@@ -52,36 +46,63 @@ class _drawerappState extends State<drawerapp> {
   Widget build(BuildContext context) {
     return WillPopScope(
       // ignore: missing_return
-      onWillPop: (){
+      onWillPop: () {
         _logoutDialog();
       },
       child: SafeArea(
         child: Scaffold(
-          body: Center(
-            child: Text("Main Page"),
-          ),
+          key: _scaffoldKey,
           appBar: AppBar(
-            title: Text("Event Feed"),
             actions: <Widget>[
-              GestureDetector(
-                child: Padding(
-                  child: Icon(Icons.keyboard_arrow_right),
-                  padding: EdgeInsets.only(right: 10.0),
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: GestureDetector(
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.black,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => SelectGame()));
+                  },
                 ),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => GamePage()));
-                  /*Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) => NewPlayer(title: widget.Title,name: widget.name,)));*/
-                }
               )
             ],
+            leading: GestureDetector(
+              child: Icon(
+                Icons.format_list_bulleted,
+                color: Colors.black,
+              ),
+              onTap: () {
+                _scaffoldKey.currentState.openDrawer();
+              },
+            ),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            elevation: 0.0,
           ),
+          body: Container(
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                "Hello this is an event management app made by adipt dev tomar and aparmna chand for our college projetcs",
+                style: TextStyle(fontSize: 20.0),
+              )),
           drawer: Drawer(
             child: ListView(
               children: <Widget>[
                 UserAccountsDrawerHeader(
-                  accountName: Text(widget.Title,style: TextStyle(fontSize: 25.0),),
-                  accountEmail: Text(widget.name),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [Color(0xFFf45d27), Color(0xFFf5851f)],
+                    ),
+                  ),
+                  accountName: Text(
+                    globals.eventName,
+                    style: TextStyle(fontSize: 25.0, color: Colors.black),
+                  ),
+                  accountEmail: Text(globals.userName,
+                      style: TextStyle(color: Colors.black)),
                 ),
                 ListTile(
                   title: Text("Back to Event Code"),
@@ -100,8 +121,8 @@ class _drawerappState extends State<drawerapp> {
                   title: Text("Home"),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => HomePage("Home")));
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => HomePage("Home")));
                   },
                 ),
                 ListTile(
@@ -145,8 +166,8 @@ class _drawerappState extends State<drawerapp> {
                   leading: Icon(Icons.map),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => HomePage("Maps")));
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => HomePage("Maps")));
                   },
                 ),
                 ListTile(

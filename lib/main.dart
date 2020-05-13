@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:game_task/GSignIn.dart';
-import 'package:game_task/Test.dart';
+import 'package:game_task/GuessPlayer/ResultPage.dart';
+import 'package:game_task/GuessPlayer/playGame.dart';
+import 'package:game_task/TreasureHunt/create_team.dart';
+import 'package:game_task/TreasureHunt/team_test.dart';
+import 'package:game_task/TreasureHunt/WinnerPage.dart';
 import 'package:game_task/event_lister.dart';
 import 'package:game_task/sign_in_test.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'CodeScreen.dart';
 
 void main() {
@@ -33,11 +36,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Event',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primaryColor: Colors.indigo),
+      theme: ThemeData(
+        primaryColor: Colors.black,
+        accentColor: Colors.white,
+      ),
       home: SignInTest(),
       routes: <String, WidgetBuilder>{
-        '/a': (BuildContext context) => CodePage(name: _name),
-        '/c': (BuildContext context) => GSignIn()
+        '/a': (BuildContext context) => CodePage(),
+        '/c': (BuildContext context) => GSignIn(),
+        '/d' : (BuildContext context) => drawerapp(),
+        '/h' : (BuildContext context) => TeamTest(),
+        '/p' : (BuildContext context) => CreateGame(),
+        '/playGame' : (BuildContext context) => PlayGame(),
+        '/winner' : (BuildContext context) => WinnerPage(),
+        '/ResultPage' : (BuildContext context) => ResultPage(),
       },
     );
   }

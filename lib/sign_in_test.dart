@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:game_task/CodeScreen.dart';
 import 'package:game_task/GSignIn.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'globals.dart' as globals;
 
 class SignInTest extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class SignInTest extends StatefulWidget {
 class _SignInTestState extends State<SignInTest> {
   var _result;
   var _name;
+  var _email;
   GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
@@ -21,11 +23,10 @@ class _SignInTestState extends State<SignInTest> {
     _googleSignIn.isSignedIn().then((onValue) {
       setState(() {
         _result = onValue;
-      });
-    });
-    FirebaseAuth.instance.currentUser().then((user){
-      setState(() {
-        _name = user.displayName;
+        FirebaseAuth.instance.currentUser().then((user) {
+          _name = user.displayName;
+          _email = user.email;
+        });
       });
     });
   }
@@ -33,9 +34,9 @@ class _SignInTestState extends State<SignInTest> {
   @override
   Widget build(BuildContext context) {
     if (_result == true) {
-      return CodePage(
-        name: _name,
-      );
+      globals.userName = _name;
+      globals.emailID = _email;
+      return CodePage();
     }
     if (_result == false) {
       return GSignIn();
