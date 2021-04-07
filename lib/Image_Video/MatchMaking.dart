@@ -3,27 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:game_task/globals.dart' as globals;
 
-class FindPlayer extends StatefulWidget {
+class MatchMaking extends StatefulWidget {
   @override
-  _FindPlayerState createState() => _FindPlayerState();
+  _MatchMakingState createState() => _MatchMakingState();
 }
 
-class _FindPlayerState extends State<FindPlayer> {
-  bool isTapped;
-  String id;
+class _MatchMakingState extends State<MatchMaking> {
 
-  @override
-  void initState() {
-    isTapped = false;
-    id = "";
-    _findExistingGame();
-    super.initState();
-  }
+  bool isTapped = false;
+  String id;
+  List lst = [];
 
   _findExistingGame() async {
     var lol = "";
     await Firestore.instance
-        .collection("AllMatches")
+        .collection("GGMatches")
         .getDocuments()
         .then((onValue) {
       onValue.documents.forEach((f) {
@@ -37,7 +31,7 @@ class _FindPlayerState extends State<FindPlayer> {
       _findMatch();
     } else {
       await Firestore.instance
-          .collection("AllMatches")
+          .collection("GGMatches")
           .document(lol)
           .delete()
           .whenComplete(() {
@@ -48,7 +42,7 @@ class _FindPlayerState extends State<FindPlayer> {
 
   _findMatch() async {
     await Firestore.instance
-        .collection("AllMatches")
+        .collection("GGMatches")
         .where("NoOfPlayers", isEqualTo: 1)
         .where("Code", isEqualTo: globals.code)
         .limit(1)
@@ -62,13 +56,13 @@ class _FindPlayerState extends State<FindPlayer> {
       _addMatch();
     } else {
       DocumentReference docRef =
-          Firestore.instance.collection("AllMatches").document(id);
+          Firestore.instance.collection("GGMatches").document(id);
       Firestore.instance.runTransaction((Transaction tx) async {
         DocumentSnapshot snap = await tx.get(docRef);
         if (snap.exists) {
           if (snap.data["NoOfPlayers"] == 1) {
             tx.update(docRef,
-                {"Email2": globals.emailID, "NoOfPlayers": 2, "Guess2": false});
+                {"Email2":globals.emailID,"Guess2":false,"NoOfPlayers": 2});
           } else {
             _addMatch();
           }
@@ -76,25 +70,28 @@ class _FindPlayerState extends State<FindPlayer> {
       }).whenComplete(() {
         globals.docID = id;
         globals.playerNo = 2;
-        Navigator.of(context).popAndPushNamed("/playGame");
+        Navigator.of(context).popAndPushNamed("/PlayGameGG");
       });
     }
   }
 
-  /*_joinMatch() async {
-    await Firestore.instance.collection("AllMatches").document(id).updateData({
-      "Email2": globals.emailID, "NoOfPlayers": 2, "Guess2": false
-    }).whenComplete(() {
-      globals.docID = id;
-      globals.playerNo = 2;
-      Navigator.of(context).popAndPushNamed("/playGame");
+  _addMatch() async {
+    await Firestore.instance.collection("GGMatches").add({
+      "NoOfPlayers": 1,
+      "Email1":globals.emailID,
+      "Guess1":false,
+      "Code": globals.code,
+      "QuesID": (lst..shuffle()).first
+    }).then((on) {
+      id = on.documentID;
     });
-  }*/
+    globals.docID = id;
+  }
 
   _deletePlayer() async {
     var d = "";
     await Firestore.instance
-        .collection("AllMatches")
+        .collection("GGMatches")
         .where("Email1", isEqualTo: globals.emailID)
         .getDocuments()
         .then((onValue) {
@@ -104,7 +101,7 @@ class _FindPlayerState extends State<FindPlayer> {
     });
 
     await Firestore.instance
-        .collection("AllMatches")
+        .collection("GGMatches")
         .document(d)
         .delete()
         .whenComplete(() {
@@ -112,22 +109,30 @@ class _FindPlayerState extends State<FindPlayer> {
     });
   }
 
-  _addMatch() async {
-    await Firestore.instance.collection("AllMatches").add({
-      "NoOfPlayers": 1,
-      "Email1": globals.emailID,
-      "Guess1": false,
-      "Code": globals.code
-    }).then((on) {
-      id = on.documentID;
+  _getAllQuesId() async {
+    await Firestore.instance
+        .collection("AudioVideo")
+        .getDocuments()
+        .then((value) {
+      value.documents.forEach((e) {
+        lst.add(e.documentID);
+      });
     });
-    globals.docID = id;
   }
 
   _set() async {
     await Future.delayed(Duration(milliseconds: 1));
     globals.playerNo = 1;
     Navigator.of(context).popAndPushNamed("/playGame");
+  }
+
+  @override
+  void initState() {
+    isTapped = false;
+    id = "";
+    _getAllQuesId();
+    _findExistingGame();
+    super.initState();
   }
 
   @override

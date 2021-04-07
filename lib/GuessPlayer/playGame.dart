@@ -12,37 +12,18 @@ class PlayGame extends StatefulWidget {
   _PlayGameState createState() => _PlayGameState();
 }
 
-class _PlayGameState extends State<PlayGame> {
+class _PlayGameState extends State<PlayGame> with TickerProviderStateMixin {
+
+  bool checkAns = false;
+  Color col = Colors.black;
+  AnimationController controller;
   var active = 0;
   bool leavePressed = false;
   String val;
   Map details;
   bool isLoading = true;
   var email;
-  final _formKey = GlobalKey<FormState>();
-
-  _displayDialog(String ans) {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0)),
-            title: Text("$ans"),
-            actions: <Widget>[
-              FlatButton(
-                child: (ans == "Wrongggggg!!!") ? Text("Retry") : Text("Next"),
-                onPressed: () {
-                  if (ans == "Wrongggggg!!!") {
-                    Navigator.of(context).pop();
-                  }
-                },
-              )
-            ],
-          );
-        });
-  }
+  TextEditingController _controller = TextEditingController();
 
   _removeMatch() async {
     await Firestore.instance
@@ -83,19 +64,60 @@ class _PlayGameState extends State<PlayGame> {
         .collection("AllMatches")
         .document(globals.docID)
         .updateData({"Guess${globals.playerNo}": true}).whenComplete(() {
+      _getScore();
+    });
+  }
+
+  _newScore() async {
+    await Firestore.instance
+        .collection("AllScore")
+        .document(globals.winner + globals.code)
+        .setData({"Score": 1}).whenComplete(() {
+          setState(() {
+            checkAns = false;
+          });
       Navigator.of(context).popAndPushNamed("/ResultPage");
     });
   }
 
+  _increaseScore() async {
+    await Firestore.instance
+        .collection("AllScore")
+        .document(globals.winner + globals.code)
+        .updateData({"Score": FieldValue.increment(1)}).whenComplete(() {
+          setState(() {
+            checkAns = false;
+          });
+      Navigator.of(context).popAndPushNamed("/ResultPage");
+    });
+  }
+
+  _getScore() async {
+    DocumentSnapshot snap = await Firestore.instance
+        .collection("AllScore")
+        .document(globals.winner + globals.code)
+        .get();
+    if (!snap.exists) {
+      _newScore();
+    } else {
+      _increaseScore();
+    }
+  }
+
   _checkAns() {
-    if (_formKey.currentState.validate()) {
-      _formKey.currentState.save();
-      if (details["${globals.toGuess}"] == val) {
-        globals.winner = globals.emailID;
-        _guessTrue();
-      } else {
-        _displayDialog("Wrongggggg!!!");
-      }
+    setState(() {
+      checkAns = true;
+      col = Colors.black;
+    });
+    if (details["${globals.toGuess}"] == _controller.text) {
+      globals.winner = globals.emailID;
+      _guessTrue();
+    } else {
+      setState(() {
+        col = Colors.red;
+        checkAns = false;
+      });
+      controller.forward(from: 0.0);
     }
   }
 
@@ -118,11 +140,33 @@ class _PlayGameState extends State<PlayGame> {
         .get()
         .then((onValue) {
       details = onValue.data;
+      globals.guess = details["${globals.toGuess}"];
     }).whenComplete(() {
       setState(() {
         isLoading = false;
       });
     });
+  }
+
+  _createScore() async {
+    await Firestore.instance
+        .collection("AllScore")
+        .document(globals.winner + globals.code)
+        .setData({"Score": 0}).whenComplete(() {
+      Navigator.of(context).popAndPushNamed("/ResultPage");
+    });
+  }
+
+  _zeroScore() async {
+    DocumentSnapshot snap = await Firestore.instance
+        .collection("AllScore")
+        .document(globals.winner + globals.code)
+        .get();
+    if (!snap.exists) {
+      _createScore();
+    } else {
+      Navigator.of(context).popAndPushNamed("/ResultPage");
+    }
   }
 
   _removePlayer() async {
@@ -172,12 +216,28 @@ class _PlayGameState extends State<PlayGame> {
 
   @override
   void initState() {
+    controller =
+        AnimationController(duration: Duration(milliseconds: 500), vsync: this);
     _fetchDetails();
     super.initState();
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final Animation<double> offsetAnimation = Tween(begin: 0.0, end: 30.0)
+        .chain(CurveTween(curve: Curves.elasticIn))
+        .animate(controller)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              controller.reverse();
+            }
+          });
     return WillPopScope(
       // ignore: missing_return
       onWillPop: () {},
@@ -200,10 +260,10 @@ class _PlayGameState extends State<PlayGame> {
               elevation: 0.0,
               title: Center(
                 child: CountdownFormatted(
-                  duration: Duration(minutes: 10),
+                  duration: Duration(minutes: 2),
                   onFinish: () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => ResultPage()));
+                    globals.winner = "-1-1";
+                    Navigator.of(context).popAndPushNamed("/ResultPage");
                   },
                   builder: (BuildContext context, String remaining) {
                     return Text(
@@ -264,6 +324,7 @@ class _PlayGameState extends State<PlayGame> {
                             ),
                             ListView.builder(
                               shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
                               itemCount: globals.keys.length,
                               itemBuilder: (context, index) {
                                 if (globals.toGuess == globals.keys[index]) {
@@ -314,24 +375,33 @@ class _PlayGameState extends State<PlayGame> {
                             SizedBox(
                               height: 10.0,
                             ),
-                            Form(
-                              key: _formKey,
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                    hintText: "Your Guess",
-                                    border: OutlineInputBorder()),
-                                validator: (onVal) {
-                                  if (onVal.isEmpty) {
-                                    return "C\'mon Guess Something!";
-                                  } else {
-                                    return null;
-                                  }
-                                },
-                                onSaved: (value) {
-                                  val = value;
-                                },
-                              ),
-                            ),
+                            AnimatedBuilder(
+                                animation: offsetAnimation,
+                                builder: (buildContext, child) {
+                                  if (offsetAnimation.value < 0.0) print("");
+                                  return Container(
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 30.0),
+                                    padding: EdgeInsets.only(
+                                        left: offsetAnimation.value + 30.0,
+                                        right: 30.0 - offsetAnimation.value),
+                                    child: Center(
+                                        child: TextField(
+                                      autofocus: false,
+                                      controller: _controller,
+                                      decoration: InputDecoration(
+                                          hintText: "Your Guess",
+                                          border: OutlineInputBorder(),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide:
+                                                  BorderSide(color: col)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                            color: col,
+                                          ))),
+                                    )),
+                                  );
+                                }),
                             SizedBox(
                               height: 10.0,
                             ),
@@ -344,12 +414,15 @@ class _PlayGameState extends State<PlayGame> {
                                           BorderRadius.circular(20.0)),
                                   //color: Color(0XFF71D59D),
                                   onPressed: () {
+                                    setState(() {
+                                      checkAns = true;
+                                    });
                                     FocusScope.of(context).unfocus();
                                     _checkAns();
                                   },
                                   child: Container(
-                                    padding: EdgeInsets.fromLTRB(
-                                        25.0, 15.0, 25.0, 15.0),
+                                    height: 50.0,
+                                    width: 100.0,
                                     decoration: BoxDecoration(
                                         borderRadius:
                                             BorderRadius.circular(20.0),
@@ -357,9 +430,18 @@ class _PlayGameState extends State<PlayGame> {
                                           Color(0xFFf45d27),
                                           Color(0xFFf5851f)
                                         ])),
-                                    child: Text(
-                                      "Submit!",
-                                      style: TextStyle(color: Colors.white),
+                                    child: (checkAns)?SizedBox(
+                                      height: 30.0,
+                                      width: 45.0,
+                                      child: SpinKitWave(
+                                        size: 15.0,
+                                        color: Colors.white,
+                                      ),
+                                    ):Center(
+                                      child: Text(
+                                        "Submit!",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -406,11 +488,7 @@ class _PlayGameState extends State<PlayGame> {
                                       var doc = snapshots.data.documents[index];
                                       if (doc["Guess$active"] == true) {
                                         globals.winner = email;
-                                        Future.delayed(
-                                            Duration(milliseconds: 1), () {
-                                          Navigator.of(context)
-                                              .popAndPushNamed("/ResultPage");
-                                        });
+                                        _zeroScore();
                                         return Text(
                                           "",
                                           style: TextStyle(

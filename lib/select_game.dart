@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:game_task/Image_Video/Play_Area.dart';
-import 'package:game_task/Image_Video/Scroll_Game.dart';
+import 'package:game_task/Image_Video/Page_Select.dart';
 import 'package:game_task/TreasureHunt/team_test.dart';
-import 'package:game_task/polling_screen.dart';
+import 'file:///C:/Users/hp/IdeaProjects/game_task/lib/Poll/polling_screen.dart';
+import 'GuessPlayer/player_check.dart';
 
 class SelectGame extends StatefulWidget {
   @override
@@ -59,7 +60,7 @@ class _SelectGameState extends State<SelectGame> {
                       ),
                     ),
                   ),
-                  /*SizedBox(height: 10.0,),
+                  SizedBox(height: 10.0,),
                   FlatButton(
                     onPressed: (){},
                     shape: RoundedRectangleBorder(
@@ -88,7 +89,7 @@ class _SelectGameState extends State<SelectGame> {
                         ),
                       ),
                     ),
-                  ),*/
+                  ),
                   SizedBox(height: 10.0),
                   FlatButton(
                     onPressed: (){},
@@ -134,7 +135,7 @@ class _SelectGameState extends State<SelectGame> {
                       child: ListTile(
                         dense: true,
                         onTap: (){
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => ScrollGame()));
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PageSelect()));
                         },
                         title: Text(
                           "Guess the Info",

@@ -20,20 +20,17 @@ class _PlayerCheckState extends State<PlayerCheck> {
   }
 
   _codeCheck() async {
-    await Firestore.instance.collection("PlayerCard").getDocuments().then((onValue){
-      onValue.documents.forEach((f){
-        if(f.documentID == globals.code){
-          setState(() {
-            hasGame = 2;
-          });
-        }
-        else{
-          setState(() {
-            hasGame = 1;
-          });
-        }
+    DocumentSnapshot ds = await Firestore.instance.collection("PlayerCard").document(globals.code).get();
+    if (ds.exists){
+      setState(() {
+        hasGame = 2;
       });
-    });
+    }
+    else{
+      setState(() {
+        hasGame = 1;
+      });
+    }
   }
   
   @override
@@ -53,13 +50,14 @@ class _PlayerCheckState extends State<PlayerCheck> {
                   Text("No game available",style: TextStyle(fontSize: 20.0),),
                   SizedBox(height: 20.0,),
                   FlatButton(
+                    padding: EdgeInsets.all(0.0),
                     onPressed: (){
                       Navigator.of(context).pop();
                     },
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20.0)),
                     child: Container(
-                      padding: EdgeInsets.all(20.0),
+                      padding: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 20.0),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
                           gradient: LinearGradient(colors: [

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:game_task/TreasureHunt/QRTreasure_Hunt.dart';
 import 'package:game_task/TreasureHunt/treasure_hunt.dart';
 import 'package:game_task/globals.dart' as globals;
 
@@ -10,6 +11,7 @@ class HasTeam extends StatefulWidget {
 }
 
 class _HasTeamState extends State<HasTeam> {
+
   bool _startTapped = false;
   bool isTapped = false;
   int _toDelete;
@@ -58,7 +60,7 @@ class _HasTeamState extends State<HasTeam> {
       _shDialog();
     } else {
       Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => TreasureHunt()));
+          .push(MaterialPageRoute(builder: (context) => QRTreasureHunt()));
     }
   }
 

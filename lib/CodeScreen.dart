@@ -7,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'globals.dart' as globals;
 
-import 'event_lister.dart';
+import 'AboutEvent/event_lister.dart';
 
 class CodePage extends StatefulWidget {
   @override
@@ -123,6 +123,7 @@ class _CodePageState extends State<CodePage> {
 
   @override
   Widget build(BuildContext context) {
+    FocusScopeNode currentFocus = FocusScope.of(context);
     return WillPopScope(
       // ignore: missing_return
       onWillPop: () {
@@ -205,13 +206,16 @@ class _CodePageState extends State<CodePage> {
                                         width: 30.0,
                                         child: SpinKitWave(
                                           color: Colors.black,
-                                          size: 15.0,
+                                          size: 13.0,
                                         ),
                                       )
                                     : Icon(Icons.arrow_forward,
                                         color: Colors.black),
                                 onTap: (!_isTapped)
                                     ? () {
+                                        if (!currentFocus.hasPrimaryFocus) {
+                                          currentFocus.unfocus();
+                                        }
                                         print("hello");
                                         _signIn();
                                       }
@@ -233,27 +237,31 @@ class _CodePageState extends State<CodePage> {
                           style: TextStyle(fontSize: 17.0, color: Colors.black),
                         ),
                       ),
-                      FlatButton(
-                        padding: EdgeInsets.all(0.0),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
-                        //color: Color(0XFF71D59D),
-                        onPressed: () {
-                          _shDialog();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(15.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.0),
-                              gradient: LinearGradient(colors: [
-                                Color(0xFFf45d27),
-                                Color(0xFFf5851f)
-                              ])),
-                          child: Text(
-                            "Logout Google Account",
-                            style: TextStyle(color: Colors.black),
+                      Column(
+                        children: <Widget>[
+                          FlatButton(
+                            padding: EdgeInsets.all(0.0),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0)),
+                            //color: Color(0XFF71D59D),
+                            onPressed: () {
+                              _shDialog();
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(15.0),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  gradient: LinearGradient(colors: [
+                                    Color(0xFFf45d27),
+                                    Color(0xFFf5851f)
+                                  ])),
+                              child: Text(
+                                "Logout Google Account",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       )
                     ],
                   ),

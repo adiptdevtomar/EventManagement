@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:game_task/globals.dart' as globals;
 
 class ResultPage extends StatefulWidget {
@@ -7,40 +8,51 @@ class ResultPage extends StatefulWidget {
   _ResultPageState createState() => _ResultPageState();
 }
 
-class _ResultPageState extends State<ResultPage>
-    with SingleTickerProviderStateMixin {
-  int winner = 0;
+class _ResultPageState extends State<ResultPage> {
+  bool hasScore = false;
+  var winner = 0;
+  var score;
 
   _getWinner() {
     if (globals.winner == globals.emailID) {
       setState(() {
         winner = 1;
       });
+      _getScore();
     } else {
-      setState(() {
-        winner = 2;
-      });
+      if (globals.winner == "-1-1"){
+        setState(() {
+          winner = 3;
+          hasScore = true;
+        });
+      }
+      else{
+        setState(() {
+          winner = 2;
+        });
+        _getScore();
+      }
     }
   }
 
-  AnimationController anim;
-  Animation animation;
+  _getScore() async {
+    await Firestore.instance
+        .collection("GGScore")
+        .document(globals.winner + globals.code)
+        .get()
+        .then((value) {
+          setState(() {
+            score = value.data["Score"];
+          });
+    }).whenComplete(() {
+      setState(() {
+        hasScore = true;
+      });
+    });
+  }
 
   @override
   void initState() {
-    anim = AnimationController(duration: Duration(seconds: 2), vsync: this);
-    animation = Tween(end: 6.0, begin: 1.0).animate(anim)
-      ..addListener(() {
-        setState(() {});
-      })
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          anim.reverse();
-        } else if (status == AnimationStatus.dismissed) {
-          anim.forward();
-        }
-      });
-    anim.forward();
     _getWinner();
     super.initState();
   }
@@ -56,18 +68,12 @@ class _ResultPageState extends State<ResultPage>
   }
 
   @override
-  void dispose() {
-    anim.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (winner == 0) {
       return Scaffold(
         body: Container(
           child: Center(
-            child: Text("lol"),
+            child: Text(""),
           ),
         ),
       );
@@ -77,61 +83,211 @@ class _ResultPageState extends State<ResultPage>
           appBar: AppBar(
             elevation: 0.0,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            leading: GestureDetector(
-              child: Icon(
-                Icons.arrow_back_ios,
-                color: Colors.black,
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
           ),
-          body: Container(
-              child: Center(
-                  child: Column(
-            children: <Widget>[
-              Container(
-                height: 300.0,
-                width: 200.0,
-                child: Center(
-                  child: Transform.scale(
-                      scale: animation.value,
-                      child: Text(
-                        "You Win",
-                        style: TextStyle(color: Colors.black),
-                      )),
-                ),
-              ),
-              RaisedButton(
-                child: Text("Return"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          ))));
+          body: (hasScore == true)
+              ? Container(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Image.asset("assets/images/winner.png"),
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.25,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                "Your Score : $score",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 25.0),
+                              ),
+                              SizedBox(height: 10.0,),
+                              FlatButton(
+                                padding: EdgeInsets.all(0.0),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(60.0)),
+                                //color: Color(0XFF71D59D),
+                                onPressed: () {
+                                  Navigator.of(context).popAndPushNamed('/findPlayer');
+                                },
+                                child: Container(
+                                    padding:
+                                    EdgeInsets.fromLTRB(55.0, 15.0, 55.0, 15.0),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(60.0),
+                                        gradient: LinearGradient(colors: [
+                                          Color(0xFFf45d27),
+                                          Color(0xFFf5851f)
+                                        ])),
+                                    child: Text(
+                                      "Play Again",
+                                      style: TextStyle(
+                                          fontSize: 18.0, color: Colors.white),
+                                    )),
+                              ),
+                              InkWell(
+                                onTap: (){
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Return?",style: TextStyle(
+                                    fontSize: 17.0,
+                                    color: Colors.deepOrangeAccent
+                                ),),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Center(
+                  child: SpinKitWave(
+                    color: Colors.black,
+                    size: 18.0,
+                  ),
+                ));
     }
     if (winner == 2) {
       return Scaffold(
-        body: Center(
-          child: Container(
-            child: ListView(
-              shrinkWrap: true,
-              children: <Widget>[
-                Text("You Lost"),
-                Text("${globals.winner}"),
-                RaisedButton(
-                  child: Text("Return"),
-                  onPressed: () {
-                    _deleteGame();
-                  },
-                )
-              ],
-            ),
+          appBar: AppBar(
+            elevation: 0.0,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           ),
-        ),
-      );
+          body: (hasScore == true)
+              ? Container(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Image.asset("assets/images/loser.png"),
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          "Your Score : $score",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 25.0),
+                        ),
+                        Text("Correct Answer : ${globals.guess}"),
+                        SizedBox(height: 10.0,),
+                        FlatButton(
+                          padding: EdgeInsets.all(0.0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(60.0)),
+                          //color: Color(0XFF71D59D),
+                          onPressed: () {
+                            Navigator.of(context).popAndPushNamed('/findPlayer');
+                          },
+                          child: Container(
+                              padding:
+                              EdgeInsets.fromLTRB(55.0, 15.0, 55.0, 15.0),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(60.0),
+                                  gradient: LinearGradient(colors: [
+                                    Color(0xFFf45d27),
+                                    Color(0xFFf5851f)
+                                  ])),
+                              child: Text(
+                                "Play Again",
+                                style: TextStyle(
+                                    fontSize: 18.0, color: Colors.white),
+                              )),
+                        ),
+                        InkWell(
+                          onTap: (){
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Return?",style: TextStyle(
+                              fontSize: 17.0,
+                              color: Colors.deepOrangeAccent
+                          ),),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+              : Center(
+            child: SpinKitWave(
+              color: Colors.black,
+              size: 18.0,
+            ),
+          ));
+    }
+    if (winner == 3) {
+      return Scaffold(
+          appBar: AppBar(
+            elevation: 0.0,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          ),
+          body: (hasScore == true)
+              ? Container(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Image.asset("assets/images/loser.png"),
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          "Time's Up!",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 25.0),
+                        ),
+                        Text("Correct Answer : ${globals.guess}"),
+                        SizedBox(height: 10.0,),
+                        FlatButton(
+                          padding: EdgeInsets.all(0.0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(60.0)),
+                          onPressed: () {
+                            Navigator.of(context).popAndPushNamed('/findPlayer');
+                          },
+                          child: Container(
+                              padding:
+                              EdgeInsets.fromLTRB(55.0, 15.0, 55.0, 15.0),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(60.0),
+                                  gradient: LinearGradient(colors: [
+                                    Color(0xFFf45d27),
+                                    Color(0xFFf5851f)
+                                  ])),
+                              child: Text(
+                                "Play Again",
+                                style: TextStyle(
+                                    fontSize: 18.0, color: Colors.white),
+                              )),
+                        ),
+                        InkWell(
+                          onTap: (){
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Return?",style: TextStyle(
+                              fontSize: 17.0,
+                              color: Colors.deepOrangeAccent
+                          ),),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+              : Center(
+            child: SpinKitWave(
+              color: Colors.black,
+              size: 18.0,
+            ),
+          ));
     }
   }
 }

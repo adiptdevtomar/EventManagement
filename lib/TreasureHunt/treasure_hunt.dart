@@ -201,7 +201,9 @@ class _TreasureHuntState extends State<TreasureHunt>
                                                   0.77,
                                               decoration: BoxDecoration(
                                                   color: Colors.white,
-                                                  border: Border.all(width: 2,color: Colors.deepOrange),
+                                                  border: Border.all(
+                                                      width: 2,
+                                                      color: Colors.deepOrange),
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           10.0)),

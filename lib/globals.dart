@@ -10,4 +10,6 @@ var playerNo;
 var docID;
 var toGuess;
 var winner;
+var gWinner;
+var guess;
 List keys;

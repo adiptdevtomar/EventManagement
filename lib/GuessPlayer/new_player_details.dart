@@ -277,8 +277,8 @@ class _NewPlayerState extends State<NewPlayer> {
                                     }
                                   : null,
                               child: Container(
-                                padding:
-                                    EdgeInsets.fromLTRB(40.0, 10.0, 40.0, 10.0),
+                                width: 100.0,
+                                height: 50.0,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(20.0),
                                     gradient: LinearGradient(colors: [
@@ -286,20 +286,18 @@ class _NewPlayerState extends State<NewPlayer> {
                                       Color(0xFFf5851f)
                                     ])),
                                 child: (_tapped == true)
-                                    ? SizedBox(
-                                        width: 40.0,
-                                        height: 22.0,
-                                        child: SpinKitWave(
-                                          color: Colors.black,
-                                          size: 10.0,
+                                    ? SpinKitWave(
+                                      color: Colors.black,
+                                      size: 10.0,
+                                    )
+                                    : Center(
+                                      child: Text(
+                                          "Play",
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 18.0),
                                         ),
-                                      )
-                                    : Text(
-                                        "Play",
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 18.0),
-                                      ),
+                                    ),
                               ),
                             ),
                           ],
